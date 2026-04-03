@@ -74,7 +74,52 @@
       -webkit-backdrop-filter: blur(20px);
       border: 1px solid rgba(255,255,255,0.12);
       border-radius: 18px;
+      position: relative;
+      overflow: hidden;
     }
+
+    .glass::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: 18px;
+      padding: 1px;
+      background: radial-gradient(
+        280px circle at var(--mouse-x, -999px) var(--mouse-y, -999px),
+        rgba(168,85,247,0.7),
+        rgba(124,58,237,0.3) 40%,
+        transparent 70%
+      );
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0;
+      transition: opacity 0.35s ease;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .glass::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 18px;
+      background: radial-gradient(
+        180px circle at var(--mouse-x, -999px) var(--mouse-y, -999px),
+        rgba(168,85,247,0.09),
+        transparent 70%
+      );
+      opacity: 0;
+      transition: opacity 0.35s ease;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .glass:hover::before,
+    .glass:hover::after { opacity: 1; }
+
+    .glass > * { position: relative; z-index: 1; }
 
     .input-wrap {
       padding: 1.25rem;
@@ -428,6 +473,39 @@ function setStatus(msg, loading=false, isError=false) {
 document.getElementById('urlInput').addEventListener('keydown', e => {
   if (e.key === 'Enter') analyze();
 });
+
+// ── SPOTLIGHT GLOW ON CARDS ───────────────────────────────────
+document.querySelectorAll('.glass').forEach(card => {
+  card.addEventListener('mousemove', e => {
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    card.style.setProperty('--mouse-x', x + 'px');
+    card.style.setProperty('--mouse-y', y + 'px');
+  });
+  card.addEventListener('mouseleave', () => {
+    card.style.setProperty('--mouse-x', '-999px');
+    card.style.setProperty('--mouse-y', '-999px');
+  });
+});
+
+// Re-apply spotlight to dynamically rendered cards
+const reportObserver = new MutationObserver(() => {
+  document.querySelectorAll('.glass').forEach(card => {
+    if (card._glowBound) return;
+    card._glowBound = true;
+    card.addEventListener('mousemove', e => {
+      const rect = card.getBoundingClientRect();
+      card.style.setProperty('--mouse-x', (e.clientX - rect.left) + 'px');
+      card.style.setProperty('--mouse-y', (e.clientY - rect.top) + 'px');
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.setProperty('--mouse-x', '-999px');
+      card.style.setProperty('--mouse-y', '-999px');
+    });
+  });
+});
+reportObserver.observe(document.getElementById('report'), { childList: true, subtree: true });
 </script>
 </body>
 </html>
