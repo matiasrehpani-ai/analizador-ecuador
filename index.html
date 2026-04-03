@@ -9,95 +9,141 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    :root {
-      --bg: #f7f5f0;
-      --surface: #ffffff;
-      --border: #e2ddd6;
-      --text: #1a1a18;
-      --muted: #6b6860;
-      --hint: #a8a49e;
-      --green: #1a7a4a;
-      --green-bg: #d4f0e2;
-      --amber: #8a5c00;
-      --amber-bg: #fef3d0;
-      --red: #c0392b;
-      --accent: #1a1a18;
-    }
-
     body {
       font-family: 'DM Mono', monospace;
-      background: var(--bg);
-      color: var(--text);
+      background: #0a0a1a;
+      color: #fff;
       min-height: 100vh;
-      padding: 2rem 1rem 4rem;
+      padding: 3rem 1rem 5rem;
+      overflow-x: hidden;
     }
 
-    .container { max-width: 640px; margin: 0 auto; }
+    canvas#shader {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+    }
 
-    header { margin-bottom: 2.5rem; }
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 660px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+      animation: fadeUp 0.8s ease both;
+    }
+    .badge-top {
+      display: inline-block;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(180,140,255,0.9);
+      border: 1px solid rgba(180,140,255,0.3);
+      padding: 4px 14px;
+      border-radius: 20px;
+      margin-bottom: 1rem;
+      backdrop-filter: blur(10px);
+      background: rgba(140,80,255,0.1);
+    }
     header h1 {
       font-family: 'Fraunces', serif;
-      font-size: 28px;
+      font-size: clamp(32px, 6vw, 52px);
       font-weight: 600;
       letter-spacing: -0.02em;
-      color: var(--text);
-      margin-bottom: 6px;
+      line-height: 1.1;
+      background: linear-gradient(135deg, #fff 0%, #c8a8ff 60%, #8a50ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.75rem;
     }
-    header p { font-size: 12px; color: var(--muted); }
+    header p {
+      font-size: 12px;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 0.05em;
+    }
 
-    .input-row { display: flex; gap: 8px; margin-bottom: 1rem; }
+    .glass {
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 18px;
+    }
+
+    .input-wrap {
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      animation: fadeUp 0.8s 0.1s ease both;
+    }
+    .input-label {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.3);
+      margin-bottom: 0.6rem;
+    }
+    .input-row { display: flex; gap: 8px; }
     .url-input {
       flex: 1;
       font-family: 'DM Mono', monospace;
       font-size: 13px;
       padding: 12px 16px;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      background: var(--surface);
-      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      background: rgba(0,0,0,0.3);
+      color: #fff;
       outline: none;
-      transition: border-color 0.15s;
+      transition: border-color 0.2s;
     }
-    .url-input:focus { border-color: var(--text); }
-    .url-input::placeholder { color: var(--hint); }
+    .url-input:focus { border-color: rgba(140,80,255,0.7); }
+    .url-input::placeholder { color: rgba(255,255,255,0.2); }
 
     .btn {
       font-family: 'DM Mono', monospace;
       font-size: 12px;
       font-weight: 500;
-      padding: 12px 20px;
-      background: var(--accent);
+      padding: 12px 22px;
+      background: linear-gradient(135deg, #7c3aed, #a855f7);
       color: #fff;
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
       cursor: pointer;
       white-space: nowrap;
-      transition: opacity 0.15s;
+      transition: opacity 0.15s, transform 0.1s;
+      box-shadow: 0 4px 20px rgba(124,58,237,0.4);
     }
-    .btn:hover { opacity: 0.85; }
-    .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+    .btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
 
     .status {
       font-size: 12px;
-      color: var(--muted);
+      color: rgba(255,255,255,0.4);
       min-height: 20px;
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.25rem;
+      padding: 0 0.25rem;
     }
-    .status.error { color: var(--red); }
-    .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); animation: pulse 1s infinite; flex-shrink: 0; }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.25} }
+    .status.error { color: #f87171; }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: #a855f7; animation: pulse 1s infinite; flex-shrink: 0; }
+
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.2} }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes scaleIn { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
 
     .report { display: none; }
-    .report.visible { display: block; }
+    .report.visible { display: block; animation: scaleIn 0.4s ease both; }
 
     .score-block {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 1.5rem;
+      padding: 1.75rem;
       margin-bottom: 10px;
       display: flex;
       gap: 1.5rem;
@@ -105,85 +151,88 @@
     }
     .score-big {
       font-family: 'Fraunces', serif;
-      font-size: 60px;
+      font-size: 72px;
       font-weight: 600;
       line-height: 1;
       flex-shrink: 0;
     }
-    .score-big.strong { color: var(--green); }
-    .score-big.valid { color: var(--amber); }
-    .score-big.weak { color: var(--hint); }
+    .score-big.strong { color: #4ade80; }
+    .score-big.valid { color: #fbbf24; }
+    .score-big.weak { color: rgba(255,255,255,0.3); }
+
     .score-meta { flex: 1; min-width: 0; }
-    .score-url { font-size: 11px; color: var(--hint); margin-bottom: 6px; word-break: break-all; }
+    .score-url { font-size: 10px; color: rgba(255,255,255,0.25); margin-bottom: 8px; word-break: break-all; }
+
     .verdict-badge {
       display: inline-block;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 500;
-      padding: 4px 12px;
+      padding: 4px 14px;
       border-radius: 20px;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
-    .verdict-badge.strong { background: var(--green-bg); color: var(--green); }
-    .verdict-badge.valid { background: var(--amber-bg); color: var(--amber); }
-    .verdict-badge.weak { background: var(--bg); color: var(--muted); border: 1px solid var(--border); }
-    .bar-wrap { height: 4px; background: var(--border); border-radius: 2px; }
-    .bar-fill { height: 100%; border-radius: 2px; transition: width 0.7s ease; }
-    .bar-fill.strong { background: var(--green); }
-    .bar-fill.valid { background: #d4960a; }
-    .bar-fill.weak { background: var(--hint); }
+    .verdict-badge.strong { background: rgba(74,222,128,0.15); color: #4ade80; border: 1px solid rgba(74,222,128,0.3); }
+    .verdict-badge.valid { background: rgba(251,191,36,0.15); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
+    .verdict-badge.weak { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.1); }
 
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 1.25rem 1.5rem;
-      margin-bottom: 10px;
-    }
+    .bar-wrap { height: 3px; background: rgba(255,255,255,0.08); border-radius: 2px; }
+    .bar-fill { height: 100%; border-radius: 2px; transition: width 0.8s cubic-bezier(0.16,1,0.3,1); }
+    .bar-fill.strong { background: linear-gradient(90deg, #22c55e, #4ade80); }
+    .bar-fill.valid { background: linear-gradient(90deg, #d97706, #fbbf24); }
+    .bar-fill.weak { background: rgba(255,255,255,0.2); }
+
+    .card { padding: 1.25rem 1.5rem; margin-bottom: 10px; }
     .card-title {
-      font-size: 10px;
+      font-size: 9px;
       font-weight: 500;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.15em;
       text-transform: uppercase;
-      color: var(--hint);
+      color: rgba(180,140,255,0.6);
       margin-bottom: 1rem;
     }
 
-    .cr-row { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+    .cr-row { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 12px; }
     .cr-row:last-child { border-bottom: none; padding-bottom: 0; }
     .cr-icon { flex-shrink: 0; font-size: 13px; margin-top: 1px; }
-    .cr-text { flex: 1; line-height: 1.5; }
-    .cr-pts { flex-shrink: 0; color: var(--hint); font-size: 11px; margin-top: 2px; }
+    .cr-text { flex: 1; line-height: 1.5; color: rgba(255,255,255,0.75); }
+    .cr-text strong { color: #fff; }
+    .cr-pts { flex-shrink: 0; color: rgba(255,255,255,0.25); font-size: 11px; margin-top: 2px; }
 
-    .issue-row { display: flex; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 12px; line-height: 1.5; }
+    .issue-row { display: flex; gap: 10px; padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 12px; line-height: 1.5; color: rgba(255,255,255,0.75); }
     .issue-row:last-child { border-bottom: none; }
-    .issue-dot { width: 4px; height: 4px; border-radius: 50%; background: #d4960a; flex-shrink: 0; margin-top: 6px; }
+    .issue-dot { width: 4px; height: 4px; border-radius: 50%; background: #fbbf24; flex-shrink: 0; margin-top: 6px; }
 
-    .pitch-row { padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 12px; line-height: 1.6; }
+    .pitch-row { padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 12px; line-height: 1.6; color: rgba(255,255,255,0.75); }
     .pitch-row:last-child { border-bottom: none; }
-    .pitch-num { font-size: 10px; color: var(--hint); margin-bottom: 3px; }
-    .pitch-title { font-weight: 500; margin-bottom: 3px; }
+    .pitch-num { font-size: 9px; color: rgba(180,140,255,0.5); margin-bottom: 3px; letter-spacing: 0.1em; }
+    .pitch-title { font-weight: 500; color: #fff; margin-bottom: 3px; }
 
-    footer { margin-top: 2rem; font-size: 11px; color: var(--hint); text-align: center; }
+    footer { margin-top: 2.5rem; font-size: 10px; color: rgba(255,255,255,0.18); text-align: center; letter-spacing: 0.08em; }
   </style>
 </head>
 <body>
-<div class="container">
 
+<canvas id="shader"></canvas>
+
+<div class="container">
   <header>
-    <h1>Analizador de Landing Pages</h1>
+    <div class="badge-top">Powered by Claude AI</div>
+    <h1>Analizador de<br>Landing Pages</h1>
     <p>CRO · Mercado ecuatoriano · Puntuación 0–10</p>
   </header>
 
-  <div class="input-row">
-    <input class="url-input" id="urlInput" type="text" placeholder="empresa-ecuador.com" />
-    <button class="btn" id="analyzeBtn" onclick="analyze()">Analizar →</button>
+  <div class="glass input-wrap">
+    <div class="input-label">URL a analizar</div>
+    <div class="input-row">
+      <input class="url-input" id="urlInput" type="text" placeholder="empresa-ecuador.com" />
+      <button class="btn" id="analyzeBtn" onclick="analyze()">Analizar →</button>
+    </div>
   </div>
 
   <div class="status" id="status"></div>
 
   <div class="report" id="report">
-
-    <div class="score-block">
+    <div class="glass score-block">
       <div class="score-big" id="scoreNum">—</div>
       <div class="score-meta">
         <div class="score-url" id="scoreUrl"></div>
@@ -191,107 +240,194 @@
         <div class="bar-wrap"><div class="bar-fill" id="barFill" style="width:0%"></div></div>
       </div>
     </div>
-
-    <div class="card">
+    <div class="glass card">
       <div class="card-title">Desglose por criterio</div>
       <div id="criteriaList"></div>
     </div>
-
-    <div class="card">
+    <div class="glass card">
       <div class="card-title">Puntos críticos detectados</div>
       <div id="issuesList"></div>
     </div>
-
-    <div class="card">
+    <div class="glass card">
       <div class="card-title">Propuesta de mejora — pitch de venta</div>
       <div id="pitchList"></div>
     </div>
-
   </div>
 
   <footer>Construido para prospección de clientes en Ecuador</footer>
-
 </div>
 
 <script>
-  function normalizeUrl(raw) {
-    let url = raw.trim();
-    if (!url) return null;
-    if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
-    try { new URL(url); return url; } catch(e) { return null; }
-  }
+// ── SHADER ────────────────────────────────────────────────────
+const canvas = document.getElementById('shader');
+const gl = canvas.getContext('webgl');
 
-  async function analyze() {
-    const raw = document.getElementById('urlInput').value;
-    const url = normalizeUrl(raw);
-
-    if (!url) { setStatus('Ingresa una URL válida, ej: empresa.com.ec', false, true); return; }
-
-    const btn = document.getElementById('analyzeBtn');
-    btn.disabled = true;
-    document.getElementById('report').classList.remove('visible');
-    setStatus('Visitando y analizando la página...', true);
-
-    try {
-      const res = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url })
-      });
-
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-
-      renderReport(url, data);
-      setStatus('');
-    } catch(err) {
-      setStatus('Error: ' + err.message, false, true);
+if (gl) {
+  const vs = `attribute vec4 aVertexPosition; void main() { gl_Position = aVertexPosition; }`;
+  const fs = `
+    precision highp float;
+    uniform vec2 iResolution;
+    uniform float iTime;
+    const float overallSpeed = 0.2;
+    const float gridSmoothWidth = 0.015;
+    const float scale = 5.0;
+    const vec4 lineColor = vec4(0.4, 0.2, 0.8, 1.0);
+    const float minLineWidth = 0.01;
+    const float maxLineWidth = 0.2;
+    const float lineSpeed = 1.0 * overallSpeed;
+    const float lineAmplitude = 1.0;
+    const float lineFrequency = 0.2;
+    const float warpSpeed = 0.2 * overallSpeed;
+    const float warpFrequency = 0.5;
+    const float warpAmplitude = 1.0;
+    const float offsetFrequency = 0.5;
+    const float offsetSpeed = 1.33 * overallSpeed;
+    const float minOffsetSpread = 0.6;
+    const float maxOffsetSpread = 2.0;
+    const int linesPerGroup = 16;
+    #define drawCircle(pos, radius, coord) smoothstep(radius + gridSmoothWidth, radius, length(coord - (pos)))
+    #define drawSmoothLine(pos, halfWidth, t) smoothstep(halfWidth, 0.0, abs(pos - (t)))
+    #define drawCrispLine(pos, halfWidth, t) smoothstep(halfWidth + gridSmoothWidth, halfWidth, abs(pos - (t)))
+    float random(float t) { return (cos(t) + cos(t * 1.3 + 1.3) + cos(t * 1.4 + 1.4)) / 3.0; }
+    float getPlasmaY(float x, float hFade, float offset) {
+      return random(x * lineFrequency + iTime * lineSpeed) * hFade * lineAmplitude + offset;
     }
+    void main() {
+      vec2 uv = gl_FragCoord.xy / iResolution.xy;
+      vec2 space = (gl_FragCoord.xy - iResolution.xy / 2.0) / iResolution.x * 2.0 * scale;
+      float hFade = 1.0 - (cos(uv.x * 6.28) * 0.5 + 0.5);
+      float vFade = 1.0 - (cos(uv.y * 6.28) * 0.5 + 0.5);
+      space.y += random(space.x * warpFrequency + iTime * warpSpeed) * warpAmplitude * (0.5 + hFade);
+      space.x += random(space.y * warpFrequency + iTime * warpSpeed + 2.0) * warpAmplitude * hFade;
+      vec4 lines = vec4(0.0);
+      for(int l = 0; l < linesPerGroup; l++) {
+        float nli = float(l) / float(linesPerGroup);
+        float offT = iTime * offsetSpeed;
+        float offPos = float(l) + space.x * offsetFrequency;
+        float rand = random(offPos + offT) * 0.5 + 0.5;
+        float hw = mix(minLineWidth, maxLineWidth, rand * hFade) / 2.0;
+        float offset = random(offPos + offT * (1.0 + nli)) * mix(minOffsetSpread, maxOffsetSpread, hFade);
+        float lp = getPlasmaY(space.x, hFade, offset);
+        float line = drawSmoothLine(lp, hw, space.y) / 2.0 + drawCrispLine(lp, hw * 0.15, space.y);
+        float cx = mod(float(l) + iTime * lineSpeed, 25.0) - 12.0;
+        vec2 cp = vec2(cx, getPlasmaY(cx, hFade, offset));
+        line += drawCircle(cp, 0.01, space) * 4.0;
+        lines += line * lineColor * rand;
+      }
+      vec4 col = mix(vec4(0.04,0.04,0.12,1.0), vec4(0.12,0.04,0.22,1.0), uv.x);
+      col *= vFade; col.a = 1.0; col += lines;
+      gl_FragColor = col;
+    }
+  `;
 
-    btn.disabled = false;
+  function mkShader(type, src) {
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src); gl.compileShader(s); return s;
   }
+  const prog = gl.createProgram();
+  gl.attachShader(prog, mkShader(gl.VERTEX_SHADER, vs));
+  gl.attachShader(prog, mkShader(gl.FRAGMENT_SHADER, fs));
+  gl.linkProgram(prog);
 
-  function renderReport(url, r) {
-    const score = parseFloat(r.score) || 0;
-    const pct = Math.round((score / 10) * 100);
-    const tier = score >= 7 ? 'strong' : score >= 4 ? 'valid' : 'weak';
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,1,1]), gl.STATIC_DRAW);
 
-    document.getElementById('scoreNum').textContent = Number.isInteger(score) ? score : score.toFixed(1);
-    document.getElementById('scoreNum').className = 'score-big ' + tier;
-    document.getElementById('scoreUrl').textContent = url;
-    document.getElementById('verdictBadge').textContent = r.verdict;
-    document.getElementById('verdictBadge').className = 'verdict-badge ' + tier;
-    document.getElementById('barFill').style.width = pct + '%';
-    document.getElementById('barFill').className = 'bar-fill ' + tier;
+  const posL = gl.getAttribLocation(prog, 'aVertexPosition');
+  const resL = gl.getUniformLocation(prog, 'iResolution');
+  const timeL = gl.getUniformLocation(prog, 'iTime');
 
-    document.getElementById('criteriaList').innerHTML = (r.criteria || []).map(c => {
-      const full = c.pts_earned >= c.pts_max;
-      const zero = c.pts_earned === 0;
-      const icon = full ? '✓' : zero ? '✗' : '◐';
-      const color = full ? '#1a7a4a' : zero ? '#c0392b' : '#d4960a';
-      return `<div class="cr-row"><div class="cr-icon" style="color:${color}">${icon}</div><div class="cr-text"><strong>${c.name}</strong> — ${c.note}</div><div class="cr-pts">${c.pts_earned}/${c.pts_max}</div></div>`;
-    }).join('');
+  function resize() { canvas.width = innerWidth; canvas.height = innerHeight; gl.viewport(0,0,canvas.width,canvas.height); }
+  window.addEventListener('resize', resize); resize();
 
-    document.getElementById('issuesList').innerHTML = (r.issues || []).map(i =>
-      `<div class="issue-row"><div class="issue-dot"></div><div>${i}</div></div>`
-    ).join('');
+  const t0 = Date.now();
+  (function render() {
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.useProgram(prog);
+    gl.uniform2f(resL, canvas.width, canvas.height);
+    gl.uniform1f(timeL, (Date.now()-t0)/1000);
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.vertexAttribPointer(posL, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(posL);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    requestAnimationFrame(render);
+  })();
+}
 
-    document.getElementById('pitchList').innerHTML = (r.pitch || []).map((p, i) =>
-      `<div class="pitch-row"><div class="pitch-num">ARGUMENTO ${i+1}</div><div class="pitch-title">${p.title}</div><div>${p.body}</div></div>`
-    ).join('');
+// ── APP ───────────────────────────────────────────────────────
+function normalizeUrl(raw) {
+  let url = raw.trim();
+  if (!url) return null;
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  try { new URL(url); return url; } catch(e) { return null; }
+}
 
-    document.getElementById('report').classList.add('visible');
+async function analyze() {
+  const raw = document.getElementById('urlInput').value;
+  const url = normalizeUrl(raw);
+  if (!url) { setStatus('Ingresa una URL válida, ej: empresa.com.ec', false, true); return; }
+
+  const btn = document.getElementById('analyzeBtn');
+  btn.disabled = true;
+  document.getElementById('report').classList.remove('visible');
+  setStatus('Visitando y analizando la página...', true);
+
+  try {
+    const res = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    renderReport(url, data);
+    setStatus('');
+  } catch(err) {
+    setStatus('Error: ' + err.message, false, true);
   }
+  btn.disabled = false;
+}
 
-  function setStatus(msg, loading = false, isError = false) {
-    const s = document.getElementById('status');
-    s.className = 'status' + (isError ? ' error' : '');
-    s.innerHTML = msg ? (loading ? `<div class="dot"></div>${msg}` : msg) : '';
-  }
+function renderReport(url, r) {
+  const score = parseFloat(r.score) || 0;
+  const pct = Math.round((score / 10) * 100);
+  const tier = score >= 7 ? 'strong' : score >= 4 ? 'valid' : 'weak';
 
-  document.getElementById('urlInput').addEventListener('keydown', e => {
-    if (e.key === 'Enter') analyze();
-  });
+  document.getElementById('scoreNum').textContent = Number.isInteger(score) ? score : score.toFixed(1);
+  document.getElementById('scoreNum').className = 'score-big ' + tier;
+  document.getElementById('scoreUrl').textContent = url;
+  document.getElementById('verdictBadge').textContent = r.verdict;
+  document.getElementById('verdictBadge').className = 'verdict-badge ' + tier;
+  document.getElementById('barFill').style.width = pct + '%';
+  document.getElementById('barFill').className = 'bar-fill ' + tier;
+
+  document.getElementById('criteriaList').innerHTML = (r.criteria || []).map(c => {
+    const full = c.pts_earned >= c.pts_max, zero = c.pts_earned === 0;
+    const icon = full ? '✓' : zero ? '✗' : '◐';
+    const color = full ? '#4ade80' : zero ? '#f87171' : '#fbbf24';
+    return `<div class="cr-row"><div class="cr-icon" style="color:${color}">${icon}</div><div class="cr-text"><strong>${c.name}</strong> — ${c.note}</div><div class="cr-pts">${c.pts_earned}/${c.pts_max}</div></div>`;
+  }).join('');
+
+  document.getElementById('issuesList').innerHTML = (r.issues||[]).map(i =>
+    `<div class="issue-row"><div class="issue-dot"></div><div>${i}</div></div>`
+  ).join('');
+
+  document.getElementById('pitchList').innerHTML = (r.pitch||[]).map((p,i) =>
+    `<div class="pitch-row"><div class="pitch-num">ARGUMENTO ${i+1}</div><div class="pitch-title">${p.title}</div><div>${p.body}</div></div>`
+  ).join('');
+
+  document.getElementById('report').classList.add('visible');
+}
+
+function setStatus(msg, loading=false, isError=false) {
+  const s = document.getElementById('status');
+  s.className = 'status' + (isError ? ' error' : '');
+  s.innerHTML = msg ? (loading ? `<div class="dot"></div>${msg}` : msg) : '';
+}
+
+document.getElementById('urlInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') analyze();
+});
 </script>
 </body>
 </html>
